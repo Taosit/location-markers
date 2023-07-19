@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Location } from "@/App.vue";
 import { ref } from "vue";
+import { fetcher } from "@/utils/fetcher";
 
 const searchString = ref("");
 
@@ -9,24 +10,18 @@ const emit = defineEmits<{
 }>();
 
 const search = () => {
-  fetch(
-    `https://maps.googleapis.com/maps/api/geocode/json?address=${searchString.value}&key=${
-      import.meta.env.VITE_GOOGLE_MAP_API
-    }`
-  )
-    .then((res) => res.json())
+  fetcher("https://maps.googleapis.com/maps/api/geocode/json", { address: searchString.value })
     .then((data) => {
-      if (data.status !== "OK" || data.results.length === 0) {
-        throw new Error("No results found");
-      }
-      const { lat, lng } = data.results[0].geometry.location;
+      const { lat, lng } = data[0].geometry.location;
       emit("search", {
         coords: { lat, lng },
         timestamp: Date.now(),
         name: searchString.value,
-        deleted: false,
       });
       searchString.value = "";
+    })
+    .catch((err) => {
+      console.log(err);
     });
 };
 
@@ -45,25 +40,18 @@ const getUserLocation = () => {
   }
   navigator.geolocation.getCurrentPosition((position) => {
     const { latitude: lat, longitude: lng } = position.coords;
-    fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${
-        import.meta.env.VITE_GOOGLE_MAP_API
-      }`
-    )
-      .then((res) => res.json())
+
+    fetcher("https://maps.googleapis.com/maps/api/geocode/json", { latlng: `${lat},${lng}` })
       .then((data) => {
-        if (data.status !== "OK" || data.results.length === 0) {
-          throw new Error("No results found");
-        }
-        const city = data.results[0].address_components.find((c: Address) =>
-          c.types.includes("locality")
-        );
+        const city = data[0].address_components.find((c: Address) => c.types.includes("locality"));
         emit("search", {
           coords: { lat, lng },
           timestamp: Date.now(),
           name: city.long_name,
-          deleted: false,
         });
+      })
+      .catch((err) => {
+        console.log(err);
       });
   });
 };

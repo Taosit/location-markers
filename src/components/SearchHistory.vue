@@ -7,31 +7,30 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: "deleteLocations", ids: number[]): void;
+  (e: "deleteLocations", locations: Location[]): void;
 }>();
 
 const pageNumber = ref(1);
-const selectedLocations = ref<number[]>([]);
+const selectedLocations = ref<Location[]>([]);
 
-const locations = computed(() => {
-  return props.history.filter((l) => !l.deleted);
-});
 const totalPageNumber = computed(() => {
-  return Math.ceil(locations.value.length / 10);
+  return Math.ceil(props.history.length / 10);
 });
 
 const locationsOnPage = computed(() => {
   const start = (pageNumber.value - 1) * 10;
   const end = pageNumber.value * 10;
-  return locations.value.slice(start, end);
+  return props.history.slice(start, end);
 });
 
-const toggleLocation = (timestamp: number) => {
-  const index = selectedLocations.value.indexOf(timestamp);
-  if (index === -1) {
-    selectedLocations.value = [...selectedLocations.value, timestamp];
+const toggleLocation = (location: Location) => {
+  const isSelected = selectedLocations.value.find((l) => l.timestamp === location.timestamp);
+  if (!isSelected) {
+    selectedLocations.value = [...selectedLocations.value, location];
   } else {
-    selectedLocations.value = selectedLocations.value.filter((t) => t !== timestamp);
+    selectedLocations.value = selectedLocations.value.filter(
+      (l) => l.timestamp !== location.timestamp
+    );
   }
 };
 
@@ -39,7 +38,7 @@ const toggleAllLocations = () => {
   if (selectedLocations.value.length === locationsOnPage.value.length) {
     selectedLocations.value = [];
   } else {
-    selectedLocations.value = locationsOnPage.value.map((l) => l.timestamp);
+    selectedLocations.value = locationsOnPage.value;
   }
 };
 
@@ -60,16 +59,16 @@ const deleteSelectedLocations = () => {
       />
       <button @click="deleteSelectedLocations">Delete</button>
       <p>
-        {{ pageNumber * 10 - 9 }} - {{ Math.min(pageNumber * 10, locations.length) }} of
-        {{ locations.length }}
+        {{ pageNumber * 10 - 9 }} - {{ Math.min(pageNumber * 10, props.history.length) }} of
+        {{ props.history.length }}
       </p>
     </div>
     <ol class="location-list">
       <li v-for="location in locationsOnPage" :key="location.timestamp" class="location">
         <input
           type="checkbox"
-          :checked="selectedLocations.includes(location.timestamp)"
-          @change="toggleLocation(location.timestamp)"
+          :checked="selectedLocations.some((l) => l.timestamp === location.timestamp)"
+          @change="toggleLocation(location)"
         />
         <p>{{ location.name }}</p>
       </li>

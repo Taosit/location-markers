@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import Search from "./components/Search.vue";
-import GoogleMap from "./components/GoogleMap.vue";
 import SearchHistory from "./components/SearchHistory.vue";
+import { ref } from "vue";
+import { useMap } from "@/composables/useMap";
 
 export type Coords = {
   lat: number;
@@ -13,25 +13,23 @@ export type Location = {
   coords: Coords;
   timestamp: number;
   name: string;
-  deleted: boolean;
 };
 
 const locationHistory = ref<Location[]>([]);
 
-const updateSearch = (location: Location) => {
+const { mapDiv, addMarker, removeMarkers } = useMap();
+
+const addLocation = (location: Location) => {
   locationHistory.value = [location, ...locationHistory.value];
+  addMarker(location.coords.lat, location.coords.lng);
 };
 
-const deleteLocations = (ids: number[]) => {
-  locationHistory.value = locationHistory.value.map((l) => {
-    if (ids.includes(l.timestamp)) {
-      return {
-        ...l,
-        deleted: true,
-      };
-    }
-    return l;
-  });
+const deleteLocations = (locationsToDelete: Location[]) => {
+  locationHistory.value = locationHistory.value.filter(
+    (l) => !locationsToDelete.some((l2) => l2.timestamp === l.timestamp)
+  );
+  const coords = locationsToDelete.map((l) => l.coords);
+  removeMarkers(coords);
 };
 </script>
 
@@ -42,11 +40,18 @@ const deleteLocations = (ids: number[]) => {
 
   <main>
     <div class="col">
-      <Search @search="updateSearch" />
-      <GoogleMap :locations="locationHistory" />
+      <Search @search="addLocation" />
+      <div ref="mapDiv" class="map"></div>
     </div>
     <SearchHistory :history="locationHistory" @deleteLocations="deleteLocations" />
   </main>
 </template>
 
-<style scoped></style>
+<style scoped>
+.map {
+  width: 400px;
+  height: 300px;
+  background-color: brown;
+}
+</style>
+@/composables/useMap
