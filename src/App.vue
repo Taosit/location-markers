@@ -3,6 +3,7 @@ import Search from "./components/Search.vue";
 import SearchHistory from "./components/SearchHistory.vue";
 import { ref } from "vue";
 import { useMap } from "@/composables/useMap";
+import TimeZoneInfo from "./components/TimeZoneInfo.vue";
 
 export type Coords = {
   lat: number;
@@ -42,6 +43,11 @@ const deleteLocations = (locationsToDelete: Location[]) => {
     <div class="col">
       <Search @search="addLocation" />
       <div ref="mapDiv" class="map"></div>
+      <TimeZoneInfo
+        :key="locationHistory[0].timestamp"
+        v-if="locationHistory.length > 0"
+        :location="locationHistory[0]"
+      />
     </div>
     <SearchHistory :history="locationHistory" @deleteLocations="deleteLocations" />
   </main>
@@ -51,7 +57,6 @@ const deleteLocations = (locationsToDelete: Location[]) => {
 .map {
   width: 400px;
   height: 300px;
-  background-color: brown;
+  background-color: rgb(56, 175, 234);
 }
 </style>
-@/composables/useMap

@@ -12,7 +12,7 @@ const emit = defineEmits<{
 const search = () => {
   fetcher("https://maps.googleapis.com/maps/api/geocode/json", { address: searchString.value })
     .then((data) => {
-      const { lat, lng } = data[0].geometry.location;
+      const { lat, lng } = data.results[0].geometry.location;
       emit("search", {
         coords: { lat, lng },
         timestamp: Date.now(),
@@ -21,7 +21,7 @@ const search = () => {
       searchString.value = "";
     })
     .catch((err) => {
-      console.log(err);
+      console.log("Error", err);
     });
 };
 
@@ -43,7 +43,9 @@ const getUserLocation = () => {
 
     fetcher("https://maps.googleapis.com/maps/api/geocode/json", { latlng: `${lat},${lng}` })
       .then((data) => {
-        const city = data[0].address_components.find((c: Address) => c.types.includes("locality"));
+        const city = data.results[0].address_components.find((c: Address) =>
+          c.types.includes("locality")
+        );
         emit("search", {
           coords: { lat, lng },
           timestamp: Date.now(),
@@ -51,7 +53,7 @@ const getUserLocation = () => {
         });
       })
       .catch((err) => {
-        console.log(err);
+        console.log("Error", err);
       });
   });
 };
