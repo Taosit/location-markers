@@ -4,6 +4,7 @@ import SearchHistory from "./components/SearchHistory.vue";
 import { ref } from "vue";
 import { useMap } from "@/composables/useMap";
 import TimeZoneInfo from "./components/TimeZoneInfo.vue";
+import { seedLocations } from "@/seeds/locations";
 
 export type Coords = {
   lat: number;
@@ -18,19 +19,24 @@ export type Location = {
 
 const locationHistory = ref<Location[]>([]);
 
-const { mapDiv, addMarker, removeMarkers } = useMap();
+const { mapDiv, addMarker, removeMarker, adjustBoundsAndZoom } = useMap();
 
 const addLocation = (location: Location) => {
   locationHistory.value = [location, ...locationHistory.value];
-  addMarker(location.coords.lat, location.coords.lng);
+  addMarker(location.coords);
+  adjustBoundsAndZoom();
 };
 
 const deleteLocations = (locationsToDelete: Location[]) => {
   locationHistory.value = locationHistory.value.filter(
     (l) => !locationsToDelete.some((l2) => l2.timestamp === l.timestamp)
   );
-  const coords = locationsToDelete.map((l) => l.coords);
-  removeMarkers(coords);
+  locationsToDelete.forEach((l) => removeMarker(l.coords));
+  adjustBoundsAndZoom();
+};
+
+const addSeedLocations = () => {
+  seedLocations.forEach((l) => addLocation(l));
 };
 </script>
 
@@ -49,7 +55,11 @@ const deleteLocations = (locationsToDelete: Location[]) => {
         :location="locationHistory[0]"
       />
     </div>
-    <SearchHistory :history="locationHistory" @deleteLocations="deleteLocations" />
+    <SearchHistory
+      :history="locationHistory"
+      @addSeedLocations="addSeedLocations"
+      @deleteLocations="deleteLocations"
+    />
   </main>
 </template>
 

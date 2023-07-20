@@ -8,6 +8,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: "deleteLocations", locations: Location[]): void;
+  (e: "addSeedLocations"): void;
 }>();
 
 const pageNumber = ref(1);
@@ -35,10 +36,10 @@ const toggleLocation = (location: Location) => {
 };
 
 const toggleAllLocations = () => {
-  if (selectedLocations.value.length === locationsOnPage.value.length) {
+  if (selectedLocations.value.length === props.history.length) {
     selectedLocations.value = [];
   } else {
-    selectedLocations.value = locationsOnPage.value;
+    selectedLocations.value = props.history;
   }
 };
 
@@ -46,15 +47,18 @@ const deleteSelectedLocations = () => {
   emit("deleteLocations", selectedLocations.value);
   selectedLocations.value = [];
 };
+
+const seedLocations = () => {
+  emit("addSeedLocations");
+};
 </script>
 
 <template>
-  <div>
+  <div v-if="locationsOnPage.length > 0">
     <div class="table-header">
       <input
-        v-if="locationsOnPage.length > 0"
         type="checkbox"
-        :checked="selectedLocations.length === locationsOnPage.length"
+        :checked="selectedLocations.length === props.history.length"
         @change="toggleAllLocations"
       />
       <button @click="deleteSelectedLocations">Delete</button>
@@ -73,6 +77,15 @@ const deleteSelectedLocations = () => {
         <p>{{ location.name }}</p>
       </li>
     </ol>
+    <div class="page-controls">
+      <button :disabled="pageNumber === 1" @click="pageNumber--">Previous</button>
+      <p>{{ pageNumber }}</p>
+      <button :disabled="pageNumber === totalPageNumber" @click="pageNumber++">Next</button>
+    </div>
+  </div>
+  <div v-else>
+    <p>Search history will appear here.</p>
+    <button @click="seedLocations">Add seed locations</button>
   </div>
 </template>
 
@@ -83,6 +96,11 @@ const deleteSelectedLocations = () => {
 }
 
 .location {
+  display: flex;
+  align-items: center;
+}
+
+.page-controls {
   display: flex;
   align-items: center;
 }

@@ -1,7 +1,8 @@
-import { onMounted, ref } from "vue";
+import { onMounted, ref, toRaw } from "vue";
 import { Loader } from "@googlemaps/js-api-loader";
+import type { Coords, Location } from "@/App.vue";
 
-export const useMap = () => {
+export const useMap = (initialLocations?: Location[]) => {
   const mapDiv = ref<HTMLDivElement | null>(null);
   const map = ref<google.maps.Map | null>(null);
   const markers = ref<google.maps.Marker[]>([]);
@@ -17,6 +18,12 @@ export const useMap = () => {
       zoom: 10,
       center: { lat: 49.2, lng: -123 },
     });
+    if (initialLocations && initialLocations.length > 0) {
+      initialLocations.forEach((location) => {
+        addMarker(location.coords);
+      });
+      adjustBoundsAndZoom();
+    }
   });
 
   const adjustBoundsAndZoom = () => {
@@ -32,34 +39,27 @@ export const useMap = () => {
     }
   };
 
-  const addMarker = (lat: number, lng: number) => {
+  const addMarker = (coords: Coords) => {
     const marker = new google.maps.Marker({
-      position: { lat, lng },
+      position: coords,
       map: map.value,
     });
     markers.value.push(marker);
-    adjustBoundsAndZoom();
   };
 
-  const removeMarker = ({ lat, lng }: { lat: number; lng: number }) => {
+  const removeMarker = ({ lat, lng }: Coords) => {
     const markerIndex = markers.value.findIndex(
       (marker) => marker.getPosition()?.lat() === lat && marker.getPosition()?.lng() === lng
     );
     if (markerIndex === -1) return;
-    markers.value[markerIndex].setMap(null);
+    toRaw(markers.value[markerIndex]).setMap(null);
     markers.value.splice(markerIndex, 1);
-  };
-
-  const removeMarkers = (coords: { lat: number; lng: number }[]) => {
-    coords.forEach((coord) => {
-      removeMarker(coord);
-    });
-    adjustBoundsAndZoom();
   };
 
   return {
     mapDiv,
     addMarker,
-    removeMarkers,
+    removeMarker,
+    adjustBoundsAndZoom,
   };
 };
