@@ -10,9 +10,11 @@ const inputRef = ref<HTMLInputElement | null>(null);
 
 const emit = defineEmits<{
   (e: "search", location: Location): void;
+  (e: "error", location: string): void;
 }>();
 
 const search = () => {
+  if (!searchString.value) return;
   fetcher("https://maps.googleapis.com/maps/api/geocode/json", { address: searchString.value })
     .then((data) => {
       const { lat, lng } = data.results[0].geometry.location;
@@ -23,8 +25,8 @@ const search = () => {
       });
       searchString.value = "";
     })
-    .catch((err) => {
-      console.log("Error", err);
+    .catch(() => {
+      emit("error", searchString.value);
     });
 };
 
@@ -55,8 +57,8 @@ const getUserLocation = () => {
           name: city.long_name,
         });
       })
-      .catch((err) => {
-        console.log("Error", err);
+      .catch(() => {
+        emit("error", "your location");
       });
   });
 };

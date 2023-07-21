@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Search from "./components/Search.vue";
+import Search from "./components/SearchArea.vue";
 import SearchHistory from "./components/SearchHistory.vue";
 import { ref } from "vue";
 import { useMap } from "@/composables/useMap";
@@ -18,10 +18,12 @@ export type Location = {
 };
 
 const locationHistory = ref<Location[]>([]);
+const invalidSearchString = ref("");
 
 const { mapDiv, addMarker, removeMarker, adjustBoundsAndZoom } = useMap();
 
 const addLocation = (location: Location) => {
+  invalidSearchString.value = "";
   locationHistory.value = [location, ...locationHistory.value];
   addMarker(location.coords);
   adjustBoundsAndZoom();
@@ -38,13 +40,30 @@ const deleteLocations = (locationsToDelete: Location[]) => {
 const addSeedLocations = () => {
   seedLocations.forEach((l) => addLocation(l));
 };
+
+const showSearchError = (location: string) => {
+  invalidSearchString.value = location;
+};
+
+const closeErrorMessage = () => {
+  invalidSearchString.value = "";
+};
 </script>
 
 <template>
   <main class="main-container">
     <div class="map-col">
-      <Search @search="addLocation" />
-      <div ref="mapDiv" class="map"></div>
+      <Search @search="addLocation" @error="showSearchError" />
+      <div class="map-container">
+        <div ref="mapDiv" class="map"></div>
+        <div v-if="invalidSearchString" class="overlay">
+          <div class="error-message-container">
+            <button class="close-button" @click="closeErrorMessage">&times;</button>
+            <p class="error-message">Sorry, we couldn't find "{{ invalidSearchString }}".</p>
+            <p class="error-message">Please try a different location.</p>
+          </div>
+        </div>
+      </div>
       <TimeZoneInfo
         :key="locationHistory[0].timestamp"
         v-if="locationHistory.length > 0"
@@ -67,6 +86,11 @@ const addSeedLocations = () => {
   margin-inline: auto;
   margin-block: 2rem;
 }
+
+.map-container {
+  position: relative;
+}
+
 .map {
   margin-top: 2rem;
   background-color: rgb(56, 175, 234);
@@ -76,6 +100,31 @@ const addSeedLocations = () => {
   height: 0;
   overflow: hidden;
   border-radius: 2px;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background-color: #00000080;
+}
+
+.error-message-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 1.5rem 1rem 1rem;
+  background-color: var(--white);
+  border-radius: 2px;
+}
+
+.close-button {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.5rem;
+  font-size: 1.5rem;
+  color: var(--text-light);
+  line-height: 1;
 }
 
 @media (min-width: 850px) {

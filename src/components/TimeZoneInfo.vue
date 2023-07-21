@@ -31,15 +31,11 @@ onMounted(() => {
   fetcher("https://maps.googleapis.com/maps/api/timezone/json", {
     location: `${lat},${lng}`,
     timestamp: timestamp.toString(),
-  })
-    .then(({ dstOffset, rawOffset, timeZoneName }) => {
-      const localDate = getLocalDate(dstOffset, rawOffset, requestDate);
-      lastSearchedTimeZoneName.value = timeZoneName;
-      startClock(localDate);
-    })
-    .catch((err) => {
-      console.log("Error", err);
-    });
+  }).then(({ dstOffset, rawOffset, timeZoneName }) => {
+    const localDate = getLocalDate(dstOffset, rawOffset, requestDate);
+    lastSearchedTimeZoneName.value = timeZoneName;
+    startClock(localDate);
+  });
 });
 </script>
 
