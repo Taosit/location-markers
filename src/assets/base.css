@@ -1,3 +1,14 @@
+:root {
+  --primary-dark: #30a8ce;
+  --primary-mid: #93dcf3;
+  --primary-light: #f0f8f7;
+  --variant-dark: #631010;
+  --text-dark: #2f2f2f;
+  --text-light: #646464;
+  --white: #fdfdfd;
+  --content-width: 90vw;
+}
+
 *,
 *::before,
 *::after {
@@ -10,5 +21,23 @@ body {
   line-height: 1.6;
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
     Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-  font-size: 15px;
+  color: var(--text-dark);
+  background-color: var(--primary-light);
+}
+
+button {
+  font-size: inherit;
+  line-height: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  outline: none;
+}
+
+@media (min-width: 500px) {
+  :root {
+    --content-width: min(80vw, 1000px);
+  }
 }

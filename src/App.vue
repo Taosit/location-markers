@@ -41,12 +41,8 @@ const addSeedLocations = () => {
 </script>
 
 <template>
-  <header>
-    <h1>Locations</h1>
-  </header>
-
-  <main>
-    <div class="col">
+  <main class="main-container">
+    <div class="map-col">
       <Search @search="addLocation" />
       <div ref="mapDiv" class="map"></div>
       <TimeZoneInfo
@@ -55,18 +51,49 @@ const addSeedLocations = () => {
         :location="locationHistory[0]"
       />
     </div>
-    <SearchHistory
-      :history="locationHistory"
-      @addSeedLocations="addSeedLocations"
-      @deleteLocations="deleteLocations"
-    />
+    <div class="history-col">
+      <SearchHistory
+        :history="locationHistory"
+        @addSeedLocations="addSeedLocations"
+        @deleteLocations="deleteLocations"
+      />
+    </div>
   </main>
 </template>
 
 <style scoped>
+.main-container {
+  width: var(--content-width);
+  margin-inline: auto;
+  margin-block: 2rem;
+}
 .map {
-  width: 400px;
-  height: 300px;
+  margin-top: 2rem;
   background-color: rgb(56, 175, 234);
+  position: relative;
+  width: 100%;
+  padding-top: 75%;
+  height: 0;
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+@media (min-width: 850px) {
+  .main-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+  }
+  .map-col {
+    flex-basis: 400px;
+    flex-grow: 2;
+  }
+  .history-col {
+    flex-grow: 1;
+    display: flex;
+  }
+  .map {
+    margin-top: 1rem;
+  }
 }
 </style>
